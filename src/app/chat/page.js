@@ -10,11 +10,35 @@ export default function ChatPage() {
     { id: 3, sender: 'doctor', text: 'Of course, what would you like to know?', time: '10:06 AM' }
   ]);
   const [input, setInput] = useState('');
+  const [activeChat, setActiveChat] = useState('doctor'); // 'doctor' or 'ai'
 
   const sendMessage = () => {
     if (!input.trim()) return;
-    setMessages([...messages, { id: Date.now(), sender: 'user', text: input, time: 'Now' }]);
+    const newMessage = { id: Date.now(), sender: 'user', text: input, time: 'Now' };
+    setMessages([...messages, newMessage]);
     setInput('');
+
+    // Simulation response for AI bot
+    if (activeChat === 'ai') {
+      setTimeout(() => {
+        setMessages(prev => [...prev, { 
+          id: Date.now() + 1, 
+          sender: 'doctor', // Using 'doctor' style for bot too
+          text: `I understand you're asking about "${input}". I am processing your health data to provide the best advice. One moment...`, 
+          time: 'Now' 
+        }]);
+      }, 1500);
+    }
+  };
+
+  const downloadReport = () => {
+    const data = "Date,Adherence,Mood\n2026-04-01,90%,Good\n2026-04-02,100%,Great";
+    const blob = new Blob([data], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'medicare_report.csv';
+    a.click();
   };
 
   return (
@@ -27,14 +51,20 @@ export default function ChatPage() {
           </div>
           
           <div className="chat-list flex-1 overflow-y-auto">
-             <div className="chat-preview active flex items-center gap-3 p-3 rounded-xl mb-2 cursor-pointer">
+             <div 
+               className={`chat-preview ${activeChat === 'doctor' ? 'active' : ''} flex items-center gap-3 p-3 rounded-xl mb-2 cursor-pointer`}
+               onClick={() => setActiveChat('doctor')}
+             >
                 <div className="avatar bg-primary text-white"><User size={18} /></div>
                 <div>
                    <p className="font-bold text-sm">Dr. Sarah Wilson</p>
                    <p className="text-xs opacity-60 truncate w-32">Of course, what would you...</p>
                 </div>
              </div>
-             <div className="chat-preview flex items-center gap-3 p-3 rounded-xl mb-2 cursor-pointer hover:bg-secondary/20">
+             <div 
+               className={`chat-preview ${activeChat === 'ai' ? 'active' : ''} flex items-center gap-3 p-3 rounded-xl mb-2 cursor-pointer hover:bg-secondary/20`}
+               onClick={() => setActiveChat('ai')}
+             >
                 <div className="avatar bg-accent text-white"><Bot size={18} /></div>
                 <div>
                    <p className="font-bold text-sm">AI Health Assistant</p>
@@ -42,14 +72,20 @@ export default function ChatPage() {
                 </div>
              </div>
           </div>
+
+          <button className="btn btn-secondary mt-auto text-xs" onClick={downloadReport}>
+            Download Chat History
+          </button>
         </aside>
 
         <section className="card lg:col-span-3 flex flex-col p-0 overflow-hidden">
           <header className="p-4 border-b flex justify-between items-center bg-secondary/10">
              <div className="flex items-center gap-3">
-                <div className="avatar bg-primary text-white"><User size={20} /></div>
+                <div className={`avatar ${activeChat === 'ai' ? 'bg-accent' : 'bg-primary'} text-white`}>
+                  {activeChat === 'ai' ? <Bot size={20} /> : <User size={20} />}
+                </div>
                 <div>
-                   <p className="font-bold">Dr. Sarah Wilson</p>
+                   <p className="font-bold">{activeChat === 'ai' ? 'AI Health Assistant' : 'Dr. Sarah Wilson'}</p>
                    <p className="text-xs text-success font-medium">Online</p>
                 </div>
              </div>
